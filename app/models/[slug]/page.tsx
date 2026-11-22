@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
@@ -12,7 +12,7 @@ function formatContext(tokens: number) {
   return `${Math.round(tokens / 1000)}K`;
 }
 
-export default function ModelDetailPage() {
+function ModelDetailContent()  {
   const params = useParams<{ slug: string }>();
   const slug = params.slug;
 
@@ -189,5 +189,14 @@ export default function ModelDetailPage() {
         )}
       </div>
     </div>
+  );
+}
+export default function ModelDetailPage() {
+  return (
+    <Suspense
+      fallback={<div className="py-20 text-center text-sm text-slate-500">Loading model...</div>}
+    >
+      <ModelDetailContent />
+    </Suspense>
   );
 }
