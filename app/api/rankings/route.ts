@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@/app/generated/prisma/client';
+import { Prisma } from '@prisma/client';
 
 const rankingsQuerySchema = z.object({
   category: z.string().trim().optional(),
