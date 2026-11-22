@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lab {
+  id           String  @id @default(cuid())
+  name         String
+  slug         String  @unique
+  description  String?
+  website      String?
+  headquarters String?
+
+  models       Model[]
+}
+
+model Model {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String?
+  contextWindow   Int
+  maxOutputTokens Int
+  modelType       String   
+  capabilities    String[]
+  modalities      String[]
+  releaseDate     DateTime
+
+  labId           String
+  lab             Lab      @relation(fields: [labId], references: [id], onDelete: Cascade)
+
+  modelProviders  ModelProvider[]
+  benchmarks      BenchmarkScore[]
+
+  @@index([labId])
+}
+
+model Provider {
+  id             String          @id @default(cuid())
+  name           String
+  slug           String          @unique
+  website        String?
+  description    String?
+
+  modelProviders ModelProvider[]
+}
+
+
+model ModelProvider {
+  id               String   @id @default(cuid())
+  inputPricePer1M  Float
+  outputPricePer1M Float
+  latencyMs        Int
+  throughputTps    Int
+
+  modelId          String
+  model            Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  providerId       String
+  provider         Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([modelId, providerId])
+  @@index([modelId])
+  @@index([providerId])
+}
+
+model BenchmarkScore {
+  id            String @id @default(cuid())
+  benchmarkName String
+  category      String // Coding, Reasoning, Knowledge, Math
+  score         Float
+  maxScore      Float
+
+  modelId       String
+  model         Model  @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@index([modelId])
+}
