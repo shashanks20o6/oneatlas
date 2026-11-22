@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@/app/generated/prisma/client';
-
+import { Prisma } from '@prisma/client';
 const modelsQuerySchema = z.object({
   q: z.string().trim().optional(),
   lab: z.string().trim().optional(),
