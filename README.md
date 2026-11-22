@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OneAtlas — AI Model Infrastructure & Intelligence Catalog
 
-## Getting Started
+OneAtlas is a full-stack AI model discovery, benchmarking, and provider telemetry platform built with **Next.js App Router, TypeScript, TailwindCSS, Prisma ORM, Zod, and PostgreSQL**.
 
-First, run the development server:
+Developers can search and filter foundation models across creator labs and inference providers, compare token pricing and latency side-by-side, inspect standardized benchmark leaderboards, and estimate monthly production API spend.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Core Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Model Discovery Catalog (`/models`)**: Real-time debounced search (`300ms`), URL-synced filters (Creator Lab, Inference Provider, Model Type, Capabilities), and sorting by lowest input price, context length, or release date.
+- **Model Detail & Telemetry (`/models/[slug]`)**: Full context window and max output specs, provider-by-provider pricing (`$/1M` input & output), Time-to-First-Token (`TTFT`) latency, throughput (`tokens/sec`), and visual benchmark progress bars.
+- **Monthly Workload Cost Estimator**: Interactive sliders on every Model Detail page to calculate estimated 30-day spend per provider based on daily request volume and average prompt/output token counts.
+- **Side-by-Side Comparison (`/compare`)**: Compare up to 4 models simultaneously with automatic trophy highlighting for lowest pricing, largest context window, and top benchmark scores.
+- **Benchmark Rankings (`/rankings`)**: Filterable leaderboard across `Coding`, `Reasoning`, `Knowledge`, and `Math` evaluations.
+- **Labs & Providers Directories (`/labs`, `/providers`)**: Browse model creators and GPU inference providers with direct deep-links into pre-filtered catalog views.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Framework**: Next.js 16 (App Router) & React 19
+- **Language**: TypeScript
+- **Styling**: TailwindCSS & Lucide Icons
+- **Database & ORM**: PostgreSQL (Neon) & Prisma ORM
+- **Validation**: Zod (runtime URL query parameter validation)
+- **Deployment**: Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Relational Database Schema
 
-## Deploy on Vercel
+The PostgreSQL database is structured around 5 relational tables in `prisma/schema.prisma`:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **`Lab`** (`1:N` with `Model`): Foundation model creators (e.g., OpenAI, Anthropic, Google, Meta, DeepSeek, Mistral, xAI).
+2. **`Model`**: Core model specifications including `contextWindow`, `maxOutputTokens`, `modelType`, `capabilities[]`, `modalities[]`, and `releaseDate`.
+3. **`Provider`** (`M:N` with `Model`): Inference hosting endpoints (e.g., OpenAI Direct, Anthropic Direct, AWS Bedrock, Together AI, Groq, Fireworks).
+4. **`ModelProvider`**: Join table linking `Model` and `Provider` (`@@unique([modelId, providerId])`) with pairing-specific `inputPricePer1M`, `outputPricePer1M`, `latencyMs`, and `throughputTps`.
+5. **`BenchmarkScore`**: Standardized evaluation metrics (`MMLU-Pro`, `SWE-bench`, `GPQA`, `HumanEval`, etc.) categorized by domain.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## API Endpoints
+
+All endpoints validate query parameters with **Zod** and return structured JSON from PostgreSQL:
+
+- `GET /api/models` — Search, filter (`lab`, `provider`, `capability`, `modality`, `modelType`), sort (`price_asc`, `price_desc`, `context_desc`, `newest`), and paginate models.
+- `GET /api/models/[slug]` — Retrieve complete model specs, hosting providers ordered by lowest price, and benchmark scores.
+- `GET /api/compare?slugs=model-a,model-b` — Fetch up to 4 models in parallel for matrix comparison.
+- `GET /api/rankings?category=Coding&benchmark=SWE-bench` — Retrieve ordered leaderboard scores.
+- `GET /api/labs` & `GET /api/providers` — Directory listings with relational model counts.
+
+---
+
+## Local Setup Instructions
+
+1. **Clone the repository and install dependencies:**
+   ```bash
+   git clone [https://github.com/shashanks20o6/oneatlas.git](https://github.com/shashanks20o6/oneatlas.git)
+   cd oneatlas
+   npm install
