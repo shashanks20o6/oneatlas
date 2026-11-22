@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Model } from '@/types';
+import CostEstimator from '@/components/CostEstimator';
 
 function formatContext(tokens: number) {
   if (tokens >= 1_000_000)
@@ -158,7 +159,7 @@ function ModelDetailContent()  {
           </div>
         )}
       </div>
-
+       <CostEstimator providers={model.modelProviders} />
       {/* Benchmarks */}
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
         <h2 className="text-lg font-bold text-slate-900">Benchmarks</h2>
